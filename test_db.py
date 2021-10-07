@@ -19,3 +19,5 @@ with conn:
 
 INSERT_UTILIZATION = sql.SQL('''INSERT INTO utilization (date, cpu_utilization, ram_utilization) 
 VALUES (%s, %s, %s) RETURNING id_utilization''')
+
+SELECT_CPU = '''SELECT date, cpu_utilization FROM utilization ORDER BY id_utilization DESC LIMIT 10'''
