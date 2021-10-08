@@ -1,11 +1,14 @@
 from flask import Flask, request
 import psycopg2
 from psycopg2 import sql
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
 conn = psycopg2.connect('postgres://postgres:passworddb@localhost:5432/info_utilization')
 cursor = conn.cursor()
+
 
 creator_service = sql.SQL('''
 CREATE TABLE IF NOT EXISTS service (
@@ -23,19 +26,31 @@ VALUES (%s, %s) RETURNING id_task''')
 SELECT_ID = sql.SQL('''SELECT tag_data FROM service WHERE id_task=(%s)''')
 SELECT_UNIQUE_URL = sql.SQL('''SELECT DISTINCT url FROM service''')
 
+
 #Функція для обробки тегів
 def count_tag(url):
-    return f'Text tag {url}'
+    html_doc = requests.get(url).text
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    body = len(soup.find_all('body'))
+    h2 = len(soup.find_all('h2'))
+    p = len(soup.find_all('p'))
+    img = len(soup.find_all('img'))
+    return f'body: {body}, h2: {h2}, p: {p}, img: {img}'
 
 
 @app.route('/endpoint/tags', methods=['POST'])
 def create_task():
     if request.method == 'POST':
         url_data = request.data.decode('UTF-8')
-        tag_data = count_tag(url_data)
-        with conn:
-            cursor.execute(INSERT_SERVICE, (url_data, tag_data))
-        return f'id_task: {cursor.fetchone()[0]}'
+        url_check = requests.get(url_data)
+        if url_check.status_code == 200:
+            tag_data = count_tag(url_data)
+            with conn:
+                cursor.execute(INSERT_SERVICE, (url_data, tag_data))
+                return_task = f'id_task: {cursor.fetchone()[0]}'
+        else:
+            return_task = f'Сталась помилка, код відповіді: {url_check.status_code}'
+    return return_task
 
 
 @app.route('/endpoint/tags/<int:id>', methods=['GET'])
