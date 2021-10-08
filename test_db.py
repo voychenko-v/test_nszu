@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS utilization (
     );
     ''')
 
+
 with conn:
     cursor.execute(creator_utilization)
 
