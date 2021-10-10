@@ -20,8 +20,8 @@ html сторінку
 кількість унікальних url, кількість задач, сумарну кількість по кожному типу тега
 
 ## Біблшотеки:
-requests==2.26.0
-psutil==5.8.0
-psycopg2-binary==2.9.1
-beautifulsoup4==4.10.0
+requests==2.26.0 |
+psutil==5.8.0 |
+psycopg2-binary==2.9.1 |
+beautifulsoup4==4.10.0 |
 Flask==2.0.2
