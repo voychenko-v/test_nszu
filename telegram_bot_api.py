@@ -1,13 +1,33 @@
 import requests
 import psutil
 import time
-from test_db import conn, cursor, INSERT_UTILIZATION
 from datetime import datetime
+import psycopg2
+from psycopg2 import sql
 
-TOKEN = '2090372641:AAHuhXyuHUBVqeAp_zq-GG-UK5nXsBM7zYw'
+conn = psycopg2.connect('postgres://postgres:passworddb@localhost:5432/info_utilization')
+cursor = conn.cursor()
+
+creator_utilization = sql.SQL('''
+CREATE TABLE IF NOT EXISTS utilization (
+    id_utilization SERIAL PRIMARY KEY,
+    date TIMESTAMP NOT NULL,
+    cpu_utilization TEXT NOT NULL,
+    ram_utilization TEXT NOT NULL
+    );
+    ''')
+
+
+with conn:
+    cursor.execute(creator_utilization)
+
+
+INSERT_UTILIZATION = sql.SQL('''INSERT INTO utilization (date, cpu_utilization, ram_utilization) 
+                                VALUES (%s, %s, %s) RETURNING id_utilization''')
+
+TOKEN = 'TOKEN'
 API_LINK = f'https://api.telegram.org/bot{TOKEN}'
-'''Реалізував безкінечний цикл для зручності, щоб можна було відключати надсилання повідомлень. 
-Вказав відправку кожні 5 сек. для зручності перевірки коду. Прокидання в БД реалізовано в модулі test_db'''
+'''Реалізував безкінечний цикл для зручності. Вказав відправку кожні 5 сек. для зручності перевірки коду.'''
 
 
 def count_cpu(list_cpu):
